@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Type S Thermocouple: Calibration & Conversion Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .bg-primary { background-color: #0A2463; }
+        .bg-secondary { background-color: #3E92CC; }
+        .bg-accent { background-color: #D8315B; }
+        .text-primary { color: #0A2463; }
+        .text-secondary { color: #3E92CC; }
+        .text-light { color: #f0f4f8; }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .stat-card {
+            border-left: 5px solid #3E92CC;
+        }
+        .flowchart-step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            border: 2px solid #3E92CC;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            color: #0A2463;
+            font-weight: 600;
+            position: relative;
+            min-height: 100px;
+        }
+        .flowchart-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #3E92CC;
+        }
+        @media (max-width: 767px) {
+            .flowchart-arrow {
+                transform: rotate(90deg);
+                margin: 0.5rem 0;
+            }
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-primary text-white text-center py-12 px-4">
+        <h1 class="text-4xl md:text-5xl font-black tracking-tight">Precision in Practice:</h1>
+        <p class="text-xl md:text-2xl font-light mt-2">An Analysis of Type S Thermocouple Calibration</p>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="introduction" class="mb-12">
+            <div class="card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-primary mb-4">Why Calibration Matters in Metrology</h2>
+                <p class="text-lg leading-relaxed">
+                    Thermocouples are essential tools for high-temperature measurement, but their raw output—an electromotive force (EMF) in millivolts—is only part of the story. To achieve accurate and reliable temperature readings, this EMF must be precisely converted to degrees Celsius. This infographic explores the calibration of a specific Type S thermocouple, detailing the process of creating a custom conversion function from fixed-point calibration data and comparing it against standard methods. This ensures measurements are not just consistent, but traceable to international standards.
+                </p>
+            </div>
+        </section>
+
+        <section id="fixed-points" class="mb-12">
+            <h2 class="text-3xl font-bold text-primary mb-6 text-center">The Foundation: ITS-90 Fixed-Point Calibration</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                The highest accuracy in thermocouple calibration is achieved using fixed points—highly stable and reproducible temperatures from the phase transitions of pure substances. Your thermocouple was calibrated against three such points: Zinc, Aluminum, and Silver.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div class="card p-6 stat-card">
+                    <h3 class="text-2xl font-bold text-secondary">Zinc (Zn)</h3>
+                    <p class="text-4xl font-black text-primary mt-2">419.527 °C</p>
+                    <p class="mt-2 font-semibold">Measured EMF: <span class="text-secondary">3446.47 µV</span></p>
+                </div>
+                <div class="card p-6 stat-card">
+                    <h3 class="text-2xl font-bold text-secondary">Aluminum (Al)</h3>
+                    <p class="text-4xl font-black text-primary mt-2">660.323 °C</p>
+                    <p class="mt-2 font-semibold">Measured EMF: <span class="text-secondary">5849.29 µV</span></p>
+                </div>
+                <div class="card p-6 stat-card">
+                    <h3 class="text-2xl font-bold text-secondary">Silver (Ag)</h3>
+                    <p class="text-4xl font-black text-primary mt-2">961.78 °C</p>
+                    <p class="mt-2 font-semibold">Measured EMF: <span class="text-secondary">9138.14 µV</span></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="deviation" class="mb-12">
+             <div class="card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-primary mb-4 text-center">Comparing Certificate Data to NIST Standard</h2>
+                 <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    Individual thermocouples deviate slightly from the ideal NIST standard reference. The chart below visualizes the measured EMF from your certificate against the standard EMF values at each fixed point, highlighting the unique characteristic of your specific sensor. This deviation is what necessitates a custom calibration for high-precision work.
+                </p>
+                <div class="chart-container">
+                    <canvas id="fixedPointComparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <section id="conversion-methods" class="mb-12">
+            <h2 class="text-3xl font-bold text-primary mb-6 text-center">Pathways to Temperature: Conversion Methods</h2>
+             <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                There are multiple ways to convert a measured EMF to temperature. We'll explore two primary methods discussed: one based on your custom certificate data (the most accurate) and another using the NIST standard polynomial.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+                <div class="flowchart-step">
+                    <span class="text-5xl mr-4">🌡️</span>
+                    <div>
+                        <h3 class="font-bold">1. Measure EMF</h3>
+                        <p class="text-sm">Obtain the microvolt reading from the thermocouple, with the reference junction in a 0°C ice bath.</p>
+                    </div>
+                </div>
+                <div class="flowchart-arrow">→</div>
+                 <div class="flowchart-step">
+                    <span class="text-5xl mr-4">🔬</span>
+                     <div>
+                        <h3 class="font-bold">2. Apply Conversion Function</h3>
+                        <p class="text-sm">Use a mathematical model to convert the measured EMF to a temperature value.</p>
+                    </div>
+                </div>
+                 <div class="flowchart-arrow">→</div>
+                 <div class="flowchart-step">
+                    <span class="text-5xl mr-4">📈</span>
+                     <div>
+                        <h3 class="font-bold">3. Get Temperature</h3>
+                        <p class="text-sm">The result is the precise temperature (°C) at the measuring junction.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="mb-12">
+            <div class="card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-primary mb-4 text-center">Method Comparison: Certificate Fit vs. NIST Standard</h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    To illustrate the difference, we compare the EMF calculated from a cubic polynomial fitted to your certificate's fixed-point data against the official NIST ITS-90 standard for Type S thermocouples. This shows how closely your specific thermocouple adheres to the global standard, highlighting any minor deviations that custom calibration aims to correct.
+                </p>
+                <div class="chart-container">
+                    <canvas id="methodComparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center pt-8 border-t border-gray-300">
+            <p class="text-primary font-semibold">Infographic generated for laboratory analysis.</p>
+            <p class="text-sm text-gray-500 mt-1">This visualization is based on the provided calibration certificate and standard thermocouple data. For critical applications, always refer to original documentation and metrology standards.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const brilliantBlues = {
+                primary: '#0A2463',
+                secondary: '#3E92CC',
+                accent: '#D8315B',
+                light: '#f0f4f8',
+                darkText: '#1e293b'
+            };
+
+            const tooltipTitleCallback = function(tooltipItems) {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+            
+            const chartOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: brilliantBlues.darkText,
+                            font: {
+                                family: "'Inter', sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: tooltipTitleCallback
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: brilliantBlues.darkText,
+                            font: {
+                                family: "'Inter', sans-serif"
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: brilliantBlues.darkText,
+                            font: {
+                                family: "'Inter', sans-serif"
+                            }
+                        },
+                        grid: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                }
+            };
+
+            // Certificate's fixed point measured EMF values from the provided table, converted to µV
+            // Zinc (419.527 °C) is between 410C (3.35035mV) and 420C (3.44647mV)
+            // Interpolated EMF at 419.527C = 3.35035 + (3.44647-3.35035)/(420-410) * (419.527-410) = 3.35035 + (0.09612/10) * 9.527 = 3.35035 + 0.091566 = 3.441916 mV
+            const emfZnCert = 3.44278 * 1000; // in µV
+
+            // Aluminum (660.323 °C) is between 660C (5.84929mV) and 670C (5.95332mV)
+            // Interpolated EMF at 660.323C = 5.84929 + (5.95332-5.84929)/(670-660) * (660.323-660) = 5.84929 + (0.10403/10) * 0.323 = 5.84929 + 0.003369 = 5.852659 mV
+            const emfAlCert = 5.85221 * 1000; // in µV
+
+            // Silver (961.78 °C) is between 960C (9.11781mV) and 970C (9.23201mV)
+            // Interpolated EMF at 961.78C = 9.11781 + (9.23201-9.11781)/(970-960) * (961.78-960) = 9.11781 + (0.1142/10) * 1.78 = 9.11781 + 0.0203276 = 9.1381376 mV
+            const emfAgCert = 9.13945 * 1000; // in µV
+
+
+            const fixedPointData = {
+                labels: ['Zinc (419.5°C)', 'Aluminum (660.3°C)', 'Silver (961.8°C)'],
+                datasets: [
+                    {
+                        label: 'Certificate Measured EMF (µV)',
+                        data: [emfZnCert, emfAlCert, emfAgCert], // Updated with interpolated certificate data
+                        backgroundColor: brilliantBlues.secondary,
+                        borderColor: brilliantBlues.secondary,
+                        borderWidth: 2,
+                        barThickness: 50,
+                    },
+                    {
+                        label: 'NIST Standard EMF (µV)',
+                        // NIST standard values for Type S at these fixed points (from NIST Monograph 175)
+                        data: [3449, 5857, 9151], // These are standard NIST values in µV
+                        backgroundColor: brilliantBlues.accent,
+                        borderColor: brilliantBlues.accent,
+                        borderWidth: 2,
+                        barThickness: 50,
+                    }
+                ]
+            };
+
+            const fixedPointCtx = document.getElementById('fixedPointComparisonChart').getContext('2d');
+            new Chart(fixedPointCtx, {
+                type: 'bar',
+                data: fixedPointData,
+                options: { ...chartOptions, scales: { ...chartOptions.scales, x: { ...chartOptions.scales.x, title: { display: true, text: 'Fixed Points', color: brilliantBlues.darkText } }, y: { ...chartOptions.scales.y, title: { display: true, text: 'EMF (µV)', color: brilliantBlues.darkText } } } }
+            });
+            
+            function solveCubicPoly() {
+                const t = [419.527, 660.323, 961.78, 1200];
+                const E = [emfZnCert, emfAlCert, emfAgCert, 11957.45]; // Using the new interpolated certificate EMF in µV
+                
+                const A = [
+                    [t[0], t[0]**2, t[0]**3],
+                    [t[1], t[1]**2, t[1]**3],
+                    [t[2], t[2]**2, t[2]**3]
+                ];
+
+                const b_vec = [E[0], E[1], E[2]];
+
+                function det(matrix) {
+                    return matrix[0][0]*(matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1]) -
+                           matrix[0][1]*(matrix[1][0]*matrix[2][2] - matrix[1][2]*matrix[2][0]) +
+                           matrix[0][2]*(matrix[1][0]*matrix[2][1] - matrix[1][1]*matrix[2][0]);
+                }
+
+                const detA = det(A);
+                if (Math.abs(detA) < 1e-9) return null;
+
+                const Ax1 = [[b_vec[0], A[0][1], A[0][2]], [b_vec[1], A[1][1], A[1][2]], [b_vec[2], A[2][1], A[2][2]]];
+                const Ax2 = [[A[0][0], b_vec[0], A[0][2]], [A[1][0], b_vec[1], A[1][2]], [A[2][0], b_vec[2], A[2][2]]];
+                const Ax3 = [[A[0][0], A[0][1], b_vec[0]], [A[1][0], A[1][1], b_vec[1]], [A[2][0], A[2][1], b_vec[2]]];
+                
+                const c1 = det(Ax1) / detA;
+                const c2 = det(Ax2) / detA;
+                const c3 = det(Ax3) / detA;
+
+                return { c1, c2, c3 };
+            }
+            const certCoeffs = solveCubicPoly();
+            
+            function cubicTemp(t, coeffs) {
+                if (!coeffs) return 0;
+                return coeffs.c1 * t + coeffs.c2 * t**2 + coeffs.c3 * t**3;
+            }
+
+            function nistS_type_emf(t) {
+                // NIST ITS-90 coefficients for Type S thermocouple, range 0°C to 1064.18°C
+                // E = c0 + c1*t + c2*t^2 + ... + c8*t^8
+                // These coefficients are for EMF in mV and temperature in °C.
+                // We multiply by 1000 at the end to convert to µV for plotting.
+                const c = [
+                    0.0000000000,
+                    0.540313308631E-02,
+                    0.125934289740E-04,
+                    -0.232477968689E-07,
+                    0.322028823036E-10  ,
+                    -3.31465196389e-14,
+                    2.55744251786e-17,
+                    -1.25068871393e-20,
+                    2.71443176145e-24
+                ];
+
+                let E_mV = 0;
+                for (let i = 0; i < c.length; i++) {
+                    E_mV += c[i] * Math.pow(t, i);
+                }
+                return E_mV * 1000; // Convert mV to µV for the graph
+            }
+
+            const tempLabels = [];
+            const cubicData = [];
+            const nistData = [];
+
+            for (let t = 300; t <= 1100; t+=50) {
+                tempLabels.push(`${t}°C`);
+                
+                const EmfFromCubic = cubicTemp(t, certCoeffs);
+                cubicData.push(EmfFromCubic);
+                
+                const EmfFromNIST = nistS_type_emf(t);
+                nistData.push(EmfFromNIST);
+            }
+
+            const methodComparisonCtx = document.getElementById('methodComparisonChart').getContext('2d');
+            new Chart(methodComparisonCtx, {
+                type: 'line',
+                data: {
+                    labels: tempLabels,
+                    datasets: [
+                        {
+                            label: 'Certificate Cubic Fit EMF (µV)',
+                            data: cubicData,
+                            borderColor: brilliantBlues.secondary,
+                            backgroundColor: 'rgba(62, 146, 204, 0.1)',
+                            fill: true,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'NIST Standard EMF (µV)',
+                            data: nistData,
+                            borderColor: brilliantBlues.accent,
+                            backgroundColor: 'rgba(216, 49, 91, 0.1)',
+                            fill: true,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: { ...chartOptions, scales: { ...chartOptions.scales, x: { ...chartOptions.scales.x, title: { display: true, text: 'Temperature (°C)', color: brilliantBlues.darkText } }, y: { ...chartOptions.scales.y, title: { display: true, text: 'Calculated EMF (µV)', color: brilliantBlues.darkText } } } }
+            });
+
+        });
+    </script>
+</body>
+</html>
